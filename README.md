@@ -17,7 +17,7 @@ By default, the blocks of text will be imported and aligned according to the ava
 
 BG-ES-CS-DA-DE-ET-EL-EN-FR-GA-HR-IT-LV-LT-HU-MT-NL-PL-PT-RO-SK-SL-FI-SV.
 
-As result, it will be create/updated two files:
+As result, the imported data will be saved in two files:
 
 * dataset/metadata.csv
 
