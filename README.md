@@ -28,3 +28,5 @@ If the files already exist, the imported content will be appended to them, prese
 ## Execute to import one or more European Union's laws in the specified languages, as available
 > java -jar interparliadataset-0.0.1-SNAPSHOT.jar --languages EN-PT-ES-FR --CELEX 31975B0136
 
+## Parameters needed when executing behind proxy
+> java -Dhttp.proxyHost=localhost -Dhttp.proxyPort=3128 -Dhttps.proxyHost=localhost -Dhttps.proxyPort=3128 -jar interparliadataset-0.0.1-SNAPSHOT.jar --CELEX 32017R2403 --CELEX 31974B0144
