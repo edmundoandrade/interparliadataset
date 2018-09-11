@@ -36,7 +36,7 @@ public class Application implements CommandLineRunner {
 			System.out.println("- the CELEX number of one or more European Union's laws; for instance:");
 			System.out.println("  --CELEX:32017R2403 --CELEX:31974B0144");
 			System.out.println("- the LEX URN of one or more Brazil's laws; for instance:");
-			System.out.println("  --urn:lex:br:federal:decreto:1972-07-28;70885");
+			System.out.println("  --urn:lex:br:federal:lei:1992-04-22;8413");
 			System.out.println();
 			System.out.println(
 					"By default, European Union's laws will be downloaded in the available EUR-Lex languages:");

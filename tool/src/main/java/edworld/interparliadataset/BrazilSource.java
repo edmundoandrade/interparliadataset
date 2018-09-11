@@ -18,7 +18,8 @@ public class BrazilSource extends Source {
 		pageContent = pageContent(textUrl);
 		System.out.println(pageContent);
 		if (pageContent.contains("em processo de inclusão retrospectiva"))
-			throw new IllegalArgumentException("Legal text is not available yet from this URL: " + textUrl);
+			throw new IllegalArgumentException(
+					"URL to the legal text informed availability of text format is pending: " + textUrl);
 		return document;
 	}
 }
