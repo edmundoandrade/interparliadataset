@@ -16,8 +16,7 @@ As a result, target/interparliadataset-0.0.1-SNAPSHOT.jar will be generated.
 This tool is able to download and convert legislative data given:
 
 * the CELEX number of one or more European Union's laws; use for instance: --CELEX:32017R2403 --CELEX:31974B0144
-
-*- the LEX URN of one or more Brazil's laws; use for instance: --urn:lex:br:federal:decreto:1972-07-28;70885
+- the LEX URN of one or more Brazil's laws; use for instance: --urn:lex:br:federal:decreto:1972-07-28;70885
 
 By default, European Union's laws will be downloaded in the available EUR-Lex languages:
 
