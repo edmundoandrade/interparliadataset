@@ -46,7 +46,12 @@ public abstract class Source {
 	}
 
 	protected String pageContent(String url) throws IOException {
-		try (InputStream stream = new URL(url).openStream(); Scanner scanner = new Scanner(stream, "UTF-8")) {
+		return pageContent(new URL(url));
+	}
+
+	protected String pageContent(URL url) throws IOException {
+		System.out.println(url);
+		try (InputStream stream = url.openStream(); Scanner scanner = new Scanner(stream, "UTF-8")) {
 			return scanner.useDelimiter("\\A").next();
 		}
 	}

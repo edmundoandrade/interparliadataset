@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
 public class BrazilSource extends Source {
 	private static Pattern URL_PLANALTO = Pattern.compile("href=\"(http://legislacao\\.planalto\\.gov\\.br[^\"]*)\"");
 
@@ -15,11 +18,14 @@ public class BrazilSource extends Source {
 		if (!url.isPresent())
 			throw new IllegalArgumentException("URL to the legal text not found for the document: " + id);
 		String textUrl = unescapeHTML(url.get());
-		pageContent = pageContent(textUrl);
-		System.out.println(pageContent);
-		if (pageContent.contains("em processo de inclusão retrospectiva"))
-			throw new IllegalArgumentException(
-					"URL to the legal text informed availability of text format is pending: " + textUrl);
+		try (WebClient webClient = new WebClient()) {
+			HtmlPage page = webClient.getPage(textUrl);
+			webClient.waitForBackgroundJavaScriptStartingBefore(5000);
+			pageContent = page.getWebResponse().getContentAsString();
+			if (pageContent.contains("em processo de inclusão retrospectiva"))
+				throw new IllegalArgumentException(
+						"URL to the legal text informed availability of text format is pending: " + textUrl);
+		}
 		return document;
 	}
 }
