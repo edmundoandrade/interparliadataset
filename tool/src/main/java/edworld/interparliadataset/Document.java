@@ -6,7 +6,6 @@ import java.util.List;
 
 public class Document {
 	private static String CSV_SEPARATOR = ",";
-	private String source;
 	private String id;
 	private String journalId;
 	private String metadata;
@@ -14,17 +13,14 @@ public class Document {
 	private String htmlLang;
 	private String pdfLang;
 	private String journalLang;
-	List<String[]> blocks = new ArrayList<>();
+	List<String[]> texts = new ArrayList<>();
 	String[] txtLanguages;
 
-	public Document(String source, String id) {
-		this.source = source;
+	public Document(String id) {
 		this.id = id;
 	}
 
 	public static void metadataHeaderToCsv(PrintWriter out) {
-		out.print("source");
-		out.print(CSV_SEPARATOR);
 		out.print("id");
 		out.print(CSV_SEPARATOR);
 		out.print("journalId");
@@ -41,9 +37,7 @@ public class Document {
 		out.println();
 	}
 
-	public static void blocksHeaderToCsv(String[] languages, PrintWriter out) {
-		out.print("source");
-		out.print(CSV_SEPARATOR);
+	public static void textHeaderToCsv(String[] languages, PrintWriter out) {
 		out.print("id");
 		out.print(CSV_SEPARATOR);
 		out.print("seq");
@@ -55,9 +49,7 @@ public class Document {
 	}
 
 	public Document metadataToCsv(PrintWriter out) {
-		out.print(source);
-		out.print(CSV_SEPARATOR);
-		out.print(id);
+		out.print(quoteData(id));
 		out.print(CSV_SEPARATOR);
 		out.print(journalId);
 		out.print(CSV_SEPARATOR);
@@ -74,45 +66,35 @@ public class Document {
 		return this;
 	}
 
-	public Document blocksToCsv(String[] languages, PrintWriter out) {
-		int blockSeq = 1;
-		for (String[] block : blocks) {
-			out.print(source);
+	public Document textToCsv(String[] languages, PrintWriter out) {
+		int textSeq = 1;
+		for (String[] text : texts) {
+			out.print(quoteData(id));
 			out.print(CSV_SEPARATOR);
-			out.print(id);
-			out.print(CSV_SEPARATOR);
-			out.print(blockSeq);
+			out.print(textSeq);
 			for (String lang : languages) {
 				out.print(CSV_SEPARATOR);
 				int languageIndex = 0;
 				for (String txtLanguage : txtLanguages) {
-					if (txtLanguage.equalsIgnoreCase(lang) && block[languageIndex] != null) {
-						out.print(quoteData(block[languageIndex]));
+					if (txtLanguage.equalsIgnoreCase(lang) && text[languageIndex] != null) {
+						out.print(quoteData(text[languageIndex]));
 						break;
 					}
 					languageIndex++;
 				}
 			}
 			out.println();
-			blockSeq++;
+			textSeq++;
 		}
 		return this;
 	}
 
-	private String quoteData(String block) {
-		return "\"" + block.replaceAll("\"", "\"\"") + "\"";
+	private String quoteData(String text) {
+		return "\"" + text.replaceAll("\"", "\"\"") + "\"";
 	}
 
 	public String[] txtLanguages() {
 		return txtLanguages;
-	}
-
-	public String getSource() {
-		return source;
-	}
-
-	public void setSource(String source) {
-		this.source = source;
 	}
 
 	public String getId() {
@@ -145,7 +127,7 @@ public class Document {
 
 	public void setTxtLang(String txtLang) {
 		this.txtLang = txtLang;
-		txtLanguages = txtLang.isEmpty() ? new String[0] : txtLang.split("-");
+		txtLanguages = txtLang.isEmpty() ? new String[0] : txtLang.split("\\+");
 	}
 
 	public String getHtmlLang() {
@@ -172,7 +154,7 @@ public class Document {
 		this.journalLang = journalLang;
 	}
 
-	public List<String[]> getBlocks() {
-		return blocks;
+	public List<String[]> getTexts() {
+		return texts;
 	}
 }
