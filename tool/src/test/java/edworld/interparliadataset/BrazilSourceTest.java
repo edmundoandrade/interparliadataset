@@ -32,12 +32,16 @@ public class BrazilSourceTest {
 	}
 
 	@Test
-	public void loadODocumentWithTextAvailable() throws IOException {
+	public void loadODocument1992() throws IOException {
 		Document document = source.loadDocument("urn:lex:br:federal:lei:1992-04-22;8413");
 		Assert.notNull(document, "document shouldn't be null when legal text is available");
 		assertEquals("PT-BR", document.getTxtLang());
 		assertEquals(22, document.getTexts().size());
-		document = source.loadDocument("urn:lex:br:federal:lei:1993-06-21;8666");
+	}
+
+	@Test
+	public void loadODocument1993() throws IOException {
+		Document document = source.loadDocument("urn:lex:br:federal:lei:1993-06-21;8666");
 		Assert.notNull(document, "document shouldn't be null when legal text is available");
 		assertEquals("PT-BR", document.getTxtLang());
 		assertEquals(1016, document.getTexts().size());

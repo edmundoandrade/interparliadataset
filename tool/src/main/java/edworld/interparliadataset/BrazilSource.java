@@ -1,6 +1,7 @@
 package edworld.interparliadataset;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,11 +35,14 @@ public class BrazilSource extends Source {
 		String urlPlanalto = unescapeHTML(url.get());
 		try (WebClient webClient = new WebClient()) {
 			webClient.addRequestHeader("Referer", urlLexML);
+			webClient.addRequestHeader("Accept-Language", "pt-BR");
 			webClient.getOptions().setUseInsecureSSL(true);
 			webClient.getOptions().setCssEnabled(false);
 			webClient.getOptions().setThrowExceptionOnScriptError(false);
 			new WebConnectionWrapper(webClient) {
 				public WebResponse getResponse(final WebRequest request) throws IOException {
+					if (request.getUrl().toString().startsWith("http://www.planalto.gov.br/"))
+						request.setUrl(new URL(request.getUrl().toString().replace("http:", "https:")));
 					WebResponse response = super.getResponse(request);
 					if (document.getTexts().isEmpty() && request.getUrl().toString().matches(".*\\.html?")
 							&& response.getStatusCode() == HttpStatus.SC_OK) {
