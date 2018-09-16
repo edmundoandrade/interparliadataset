@@ -14,7 +14,9 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.util.WebConnectionWrapper;
 
 public class BrazilSource extends Source {
-	private static Pattern URL_PLANALTO = Pattern.compile("href=\"(http://legislacao\\.planalto\\.gov\\.br[^\"]*)\"");
+	private static final String LANGUAGE_PTBR = "PT-BR";
+	private static final Pattern URL_PLANALTO = Pattern
+			.compile("href=\"(http://legislacao\\.planalto\\.gov\\.br[^\"]*)\"");
 
 	public BrazilSource() {
 		ignoreCertificateValidation();
@@ -24,8 +26,8 @@ public class BrazilSource extends Source {
 	public Document loadDocument(String id) throws IOException {
 		String urlLexML = "http://www.lexml.gov.br/urn/" + id;
 		Document document = new Document(id);
-		document.setTxtLang("PT-BR");
-		String pageContent = pageContent(buildUrl(urlLexML));
+		document.setTxtLang("");
+		String pageContent = pageContent(translateUrl(urlLexML));
 		Optional<String> url = uniqueOccurrences(pageContent, URL_PLANALTO).stream().findFirst();
 		if (!url.isPresent())
 			throw new IllegalArgumentException("URL to the legal text not found for the document: " + id);
@@ -38,22 +40,23 @@ public class BrazilSource extends Source {
 			new WebConnectionWrapper(webClient) {
 				public WebResponse getResponse(final WebRequest request) throws IOException {
 					WebResponse response = super.getResponse(request);
-					System.out.println("************");
-					System.out.println(request.getUrl());
-					System.out.println(response.getContentAsString());
 					if (document.getTexts().isEmpty() && request.getUrl().toString().matches(".*\\.html?")
-							&& response.getStatusCode() == HttpStatus.SC_OK)
+							&& response.getStatusCode() == HttpStatus.SC_OK) {
+						document.setTxtLang(LANGUAGE_PTBR);
 						loadTexts(response.getContentAsString(), 0, document);
+					}
 					return response;
 				}
 			};
-			Page page = webClient.getPage(buildUrl(urlPlanalto));
+			Page page = webClient.getPage(translateUrl(urlPlanalto));
 			if (document.getTexts().isEmpty()) {
 				pageContent = page.getWebResponse().getContentAsString();
 				if (pageContent.contains("em processo de inclusão retrospectiva")) {
 					System.err.println("[" + urlLexML + "]");
 					System.err.println("Legal text is not available yet, according to its page: " + urlPlanalto);
-					return null;
+				} else if (page.getWebResponse().getStatusCode() == HttpStatus.SC_OK) {
+					document.setTxtLang(LANGUAGE_PTBR);
+					loadTexts(pageContent, 0, document);
 				}
 			}
 		}
@@ -68,13 +71,13 @@ public class BrazilSource extends Source {
 			if (combinedWithArticleNumber(text)) {
 				int sep = text.indexOf('°') + 1;
 				if (index == document.getTexts().size())
-					document.getTexts().add(new String[document.getTxtLang().length()]);
+					document.getTexts().add(new String[document.txtLanguages().length]);
 				document.getTexts().get(index)[languageIndex] = text.substring(0, sep);
 				index++;
 				text = text.substring(sep).trim();
 			}
 			if (index == document.getTexts().size())
-				document.getTexts().add(new String[document.getTxtLang().length()]);
+				document.getTexts().add(new String[document.txtLanguages().length]);
 			document.getTexts().get(index)[languageIndex] = text;
 			index++;
 		}

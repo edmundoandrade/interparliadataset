@@ -22,7 +22,7 @@ public class EuropeanUnionSource extends Source {
 	@Override
 	public Document loadDocument(String id) throws IOException {
 		Document document = new Document(id);
-		String pageContent = pageContent(buildUrl("https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=" + id));
+		String pageContent = pageContent(translateUrl("https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=" + id));
 		pageContent = pageContent.substring(pageContent.indexOf("Languages, formats and link to OJ"));
 		document.setJournalId(uniqueOccurrences(pageContent, JOURNAL_ID, "+"));
 		document.setTxtLang(uniqueOccurrences(pageContent, TXT_LANG, "+"));
@@ -44,7 +44,7 @@ public class EuropeanUnionSource extends Source {
 
 	private void loadTexts(String id, String lang, int languageIndex, Document document) throws IOException {
 		String pageContent = pageContent(
-				buildUrl("https://eur-lex.europa.eu/legal-content/" + lang + "/TXT/?uri=" + id));
+				translateUrl("https://eur-lex.europa.eu/legal-content/" + lang + "/TXT/?uri=" + id));
 		int start = pageContent.indexOf("textTabContent");
 		int end = pageContent.indexOf("doc-end");
 		pageContent = pageContent.substring(start, end);
@@ -59,13 +59,13 @@ public class EuropeanUnionSource extends Source {
 			if (combinedWithItemLetter(text)) {
 				int sep = text.indexOf(')') + 1;
 				if (index == document.getTexts().size())
-					document.getTexts().add(new String[document.getTxtLang().length()]);
+					document.getTexts().add(new String[document.txtLanguages().length]);
 				document.getTexts().get(index)[languageIndex] = text.substring(0, sep);
 				index++;
 				text = text.substring(sep).trim();
 			}
 			if (index == document.getTexts().size())
-				document.getTexts().add(new String[document.getTxtLang().length()]);
+				document.getTexts().add(new String[document.txtLanguages().length]);
 			document.getTexts().get(index)[languageIndex] = text;
 			index++;
 		}

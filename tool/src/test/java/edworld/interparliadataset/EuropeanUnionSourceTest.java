@@ -3,18 +3,17 @@ package edworld.interparliadataset;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.junit.Test;
 
 public class EuropeanUnionSourceTest {
 	private EuropeanUnionSource source = new EuropeanUnionSource("EN+PT+ES+FR".split("\\+")) {
 		@Override
-		protected URL buildUrl(String url) throws MalformedURLException {
+		protected String translateUrl(String url) {
 			return getClass().getResource(
 					url.replaceAll("https://eur-lex.europa.eu/legal-content/([A-Z]+)/([A-Z]+)/\\?uri=CELEX:(.*)",
-							"/CELEX-$3-$1-$2.html"));
+							"/CELEX-$3-$1-$2.html"))
+					.toString();
 		}
 	};
 

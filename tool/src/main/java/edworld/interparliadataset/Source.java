@@ -2,7 +2,6 @@ package edworld.interparliadataset;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
@@ -23,8 +22,8 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.text.StringEscapeUtils;
 
 public abstract class Source {
-	protected static Pattern PARAGRAPH = Pattern.compile("(?is)<p[^>]*>\\s*(.*?)\\s*</p>");
-	private static Pattern HTML_MARKUP = Pattern.compile("(?is)<[^/][^>]*>([^<]*)</[^>]*>");
+	protected static final Pattern PARAGRAPH = Pattern.compile("(?is)<p[^>]*>\\s*(.*?)\\s*</p>");
+	private static final Pattern HTML_MARKUP = Pattern.compile("(?is)<[^/][^>]*>([^<]*)</[^>]*>");
 
 	public abstract Document loadDocument(String id) throws IOException;
 
@@ -56,14 +55,14 @@ public abstract class Source {
 		return StringEscapeUtils.unescapeHtml4(text);
 	}
 
-	protected String pageContent(URL url) throws IOException {
-		try (InputStream stream = url.openStream(); Scanner scanner = new Scanner(stream, "UTF-8")) {
+	protected String pageContent(String url) throws IOException {
+		try (InputStream stream = new URL(url).openStream(); Scanner scanner = new Scanner(stream, "UTF-8")) {
 			return scanner.useDelimiter("\\A").next();
 		}
 	}
 
-	protected URL buildUrl(String url) throws MalformedURLException {
-		return new URL(url);
+	protected String translateUrl(String url) {
+		return url;
 	}
 
 	protected void ignoreCertificateValidation() {
