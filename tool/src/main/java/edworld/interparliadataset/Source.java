@@ -2,7 +2,10 @@ package edworld.interparliadataset;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.cert.X509Certificate;
 import java.util.LinkedHashSet;
 import java.util.Scanner;
 import java.util.Set;
@@ -10,9 +13,17 @@ import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import org.apache.commons.text.StringEscapeUtils;
 
 public abstract class Source {
+	protected static Pattern PARAGRAPH = Pattern.compile("(?is)<p[^>]*>\\s*(.*?)\\s*</p>");
 	private static Pattern HTML_MARKUP = Pattern.compile("(?is)<[^/][^>]*>([^<]*)</[^>]*>");
 
 	public abstract Document loadDocument(String id) throws IOException;
@@ -45,14 +56,44 @@ public abstract class Source {
 		return StringEscapeUtils.unescapeHtml4(text);
 	}
 
-	protected String pageContent(String url) throws IOException {
-		return pageContent(new URL(url));
-	}
-
 	protected String pageContent(URL url) throws IOException {
-		System.out.println(url);
 		try (InputStream stream = url.openStream(); Scanner scanner = new Scanner(stream, "UTF-8")) {
 			return scanner.useDelimiter("\\A").next();
 		}
+	}
+
+	protected URL buildUrl(String url) throws MalformedURLException {
+		return new URL(url);
+	}
+
+	protected void ignoreCertificateValidation() {
+		// Create a trust manager that does not validate certificate chains
+		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
+
+			public void checkClientTrusted(X509Certificate[] certs, String authType) {
+			}
+
+			public void checkServerTrusted(X509Certificate[] certs, String authType) {
+			}
+		} };
+		// Install the all-trusting trust manager
+		try {
+			SSLContext sc = SSLContext.getInstance("SSL");
+			sc.init(null, trustAllCerts, new java.security.SecureRandom());
+			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+		} catch (GeneralSecurityException e) {
+			throw new IllegalArgumentException(e);
+		}
+		// Create all-trusting host name verifier
+		HostnameVerifier allHostsValid = new HostnameVerifier() {
+			public boolean verify(String hostname, SSLSession session) {
+				return true;
+			}
+		};
+		// Install the all-trusting host verifier
+		HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 	}
 }

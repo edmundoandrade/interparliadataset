@@ -18,12 +18,11 @@ public class EuropeanUnionSource extends Source {
 	private static Pattern JOURNAL_LANG = Pattern.compile("/legal-content/([^\"]*)/TXT/\\?uri=OJ:");
 	private static Pattern METADATA = Pattern
 			.compile("(?is)<li xmlns=\"http://www\\.w3\\.org/1999/xhtml\">\\s*(.*?)\\s*</li>");
-	private static Pattern PARAGRAPH = Pattern.compile("(?is)<p[^>]*>\\s*(.*?)\\s*</p>");
 
 	@Override
 	public Document loadDocument(String id) throws IOException {
 		Document document = new Document(id);
-		String pageContent = pageContent("https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=" + id);
+		String pageContent = pageContent(buildUrl("https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=" + id));
 		pageContent = pageContent.substring(pageContent.indexOf("Languages, formats and link to OJ"));
 		document.setJournalId(uniqueOccurrences(pageContent, JOURNAL_ID, "+"));
 		document.setTxtLang(uniqueOccurrences(pageContent, TXT_LANG, "+"));
@@ -44,7 +43,8 @@ public class EuropeanUnionSource extends Source {
 	}
 
 	private void loadTexts(String id, String lang, int languageIndex, Document document) throws IOException {
-		String pageContent = pageContent("https://eur-lex.europa.eu/legal-content/" + lang + "/TXT/?uri=" + id);
+		String pageContent = pageContent(
+				buildUrl("https://eur-lex.europa.eu/legal-content/" + lang + "/TXT/?uri=" + id));
 		int start = pageContent.indexOf("textTabContent");
 		int end = pageContent.indexOf("doc-end");
 		pageContent = pageContent.substring(start, end);

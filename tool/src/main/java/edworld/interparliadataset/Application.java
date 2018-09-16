@@ -88,7 +88,7 @@ public class Application implements CommandLineRunner {
 				Document.textHeaderToCsv(languages, textOut);
 			LocalDateTime start = LocalDateTime.now();
 			EuropeanUnionSource europeanUnionSource = new EuropeanUnionSource(languages);
-			BrazilSource brazilSource = new BrazilSource();
+			Source brazilSource = new BrazilSource();
 			for (String id : idsCELEX)
 				europeanUnionSource.loadDocument(id).metadataToCsv(metadataOut).textToCsv(languages, textOut);
 			for (String id : idsURNLEXBR)
