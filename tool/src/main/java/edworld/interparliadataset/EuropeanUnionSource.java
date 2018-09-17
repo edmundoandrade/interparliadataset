@@ -1,8 +1,12 @@
 package edworld.interparliadataset;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.neovisionaries.i18n.LanguageAlpha3Code;
 
 public class EuropeanUnionSource extends Source {
 	private String[] languages;
@@ -12,66 +16,84 @@ public class EuropeanUnionSource extends Source {
 	}
 
 	private static Pattern JOURNAL_ID = Pattern.compile("/legal-content/[^\"]*/TXT/\\?uri=(OJ:[^\"]*)");
-	private static Pattern TXT_LANG = Pattern.compile("/legal-content/([^\"]*)/ALL/\\?uri=CELEX");
-	private static Pattern HTML_LANG = Pattern.compile("/legal-content/([^\"]*)/TXT/HTML/\\?uri=CELEX");
-	private static Pattern PDF_LANG = Pattern.compile("/legal-content/([^\"]*)/TXT/PDF/\\?uri=CELEX");
-	private static Pattern JOURNAL_LANG = Pattern.compile("/legal-content/([^\"]*)/TXT/\\?uri=OJ:");
-	private static Pattern METADATA = Pattern
-			.compile("(?is)<li xmlns=\"http://www\\.w3\\.org/1999/xhtml\">\\s*(.*?)\\s*</li>");
+	private static Pattern XML_METADATA = Pattern.compile("(/download-notice\\.html[^\"]*)");
+	private static Pattern EXPRESSION_LANGUAGE = Pattern
+			.compile("(?is)<EXPRESSION_USES_LANGUAGE[^>]*>.*?<IDENTIFIER>(.*?)</IDENTIFIER>");
+	private static Pattern EXPRESSION_MANIFESTATION_TYPE = Pattern.compile(
+			"(?is)<EXPRESSION_USES_LANGUAGE[^>]*>.*?<IDENTIFIER>(.*?)</IDENTIFIER>.*?</EXPRESSION_USES_LANGUAGE>.*?</EXPRESSION>(.*?)</EMBEDDED_NOTICE>");
+	private static Pattern CREATED_BY = Pattern.compile("(?is)<CREATED_BY[^>]*>.*?<PREFLABEL>(.*?)</PREFLABEL>.");
 
 	@Override
-	public Document loadDocument(String id) throws IOException {
-		Document document = new Document(id);
-		String pageContent = pageContent(translateUrl("https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=" + id));
-		pageContent = pageContent.substring(pageContent.indexOf("Languages, formats and link to OJ"));
-		document.setJournalId(uniqueOccurrences(pageContent, JOURNAL_ID, "+"));
-		document.setTxtLang(uniqueOccurrences(pageContent, TXT_LANG, "+"));
-		document.setHtmlLang(uniqueOccurrences(pageContent, HTML_LANG, "+"));
-		document.setPdfLang(uniqueOccurrences(pageContent, PDF_LANG, "+"));
-		document.setJournalLang(uniqueOccurrences(pageContent, JOURNAL_LANG, "+"));
-		document.setMetadata(uniqueOccurrences(pageContent, METADATA, " | "));
-		int languageIndex = 0;
-		for (String lang : document.txtLanguages()) {
+	public List<Document> loadDocuments(String docId) throws IOException {
+		List<Document> documents = new ArrayList<>();
+		String pageContent = pageContent(translateUrl("https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=" + docId));
+		String jornalId = uniqueOccurrences(pageContent, JOURNAL_ID, "+");
+		String xmlMetadata = pageContent(translateUrl(
+				"https://eur-lex.europa.eu" + unescapeHTML(uniqueOccurrences(pageContent, XML_METADATA, "+"))));
+		String docLangs = uniqueOccurrences(xmlMetadata, EXPRESSION_LANGUAGE, "+");
+		for (String lang3 : docLangs.split("\\+")) {
+			String lang2 = toLang2(lang3);
 			for (String language : languages)
-				if (language.equalsIgnoreCase(lang)) {
-					loadTexts(id, lang, languageIndex, document);
+				if (language.equalsIgnoreCase(lang2)) {
+					String journalUrl = "https://eur-lex.europa.eu/legal-content/" + lang2.toUpperCase() + "/TXT/?uri="
+							+ jornalId;
+					Document document = new Document(docId, lang2);
+					document.setAuthority(uniqueOccurrences(xmlMetadata, CREATED_BY, "; "));
+					document.setFirstPublicationUrl(journalUrl);
+					document.setLastPublicationUrl(journalUrl);
+					if (hasExpression(xmlMetadata, lang2, "xhtml")) {
+						document.setHtmlUrl("https://eur-lex.europa.eu/legal-content/" + lang2.toUpperCase()
+								+ "/TXT/HTML/?uri=" + docId);
+						document.setTextUrl("https://eur-lex.europa.eu/legal-content/" + lang2.toUpperCase()
+								+ "/TXT/?uri=" + docId);
+						String pageLangContent = pageContent(translateUrl(document.getTextUrl()));
+						pageContent = pageContent.substring(pageContent.indexOf("Languages, formats and link to OJ"));
+						loadTexts(pageLangContent, document);
+					}
+					if (hasExpression(xmlMetadata, lang2, "pdf"))
+						document.setPdfUrl("https://eur-lex.europa.eu/legal-content/" + lang2.toUpperCase()
+								+ "/TXT/PDF/?uri=" + docId);
+					documents.add(document);
 					break;
 				}
-			languageIndex++;
 		}
-		return document;
+		return documents;
 	}
 
-	private void loadTexts(String id, String lang, int languageIndex, Document document) throws IOException {
-		String pageContent = pageContent(
-				translateUrl("https://eur-lex.europa.eu/legal-content/" + lang + "/TXT/?uri=" + id));
+	private boolean hasExpression(String xmlMetadata, String lang, String format) {
+		Matcher matcher = EXPRESSION_MANIFESTATION_TYPE.matcher(xmlMetadata);
+		while (matcher.find()) {
+			String lang2 = toLang2(matcher.group(1));
+			if (lang2.equalsIgnoreCase(lang))
+				return matcher.group(2).contains("<MANIFESTATION manifestation-type=\"" + format);
+		}
+		return false;
+	}
+
+	private void loadTexts(String pageContent, Document document) {
 		int start = pageContent.indexOf("textTabContent");
 		int end = pageContent.indexOf("doc-end");
 		pageContent = pageContent.substring(start, end);
-		loadTexts(pageContent, languageIndex, document);
-	}
-
-	private void loadTexts(String pageContent, int languageIndex, Document document) {
-		int index = 0;
+		int sequence = 1;
 		Matcher matcher = PARAGRAPH.matcher(pageContent);
 		while (matcher.find()) {
 			String text = removeMarkup(matcher.group(1));
 			if (combinedWithItemLetter(text)) {
 				int sep = text.indexOf(')') + 1;
-				if (index == document.getTexts().size())
-					document.getTexts().add(new String[document.txtLanguages().length]);
-				document.getTexts().get(index)[languageIndex] = text.substring(0, sep);
-				index++;
+				document.getSentences().add(new DocumentSentence(sequence, text.substring(0, sep)));
 				text = text.substring(sep).trim();
+				sequence++;
 			}
-			if (index == document.getTexts().size())
-				document.getTexts().add(new String[document.txtLanguages().length]);
-			document.getTexts().get(index)[languageIndex] = text;
-			index++;
+			document.getSentences().add(new DocumentSentence(sequence, text));
+			sequence++;
 		}
 	}
 
 	private boolean combinedWithItemLetter(String text) {
 		return text.matches("\\(?[a-zA-Z]\\).*[a-zA-Z].*");
+	}
+
+	private String toLang2(String lang3) {
+		return LanguageAlpha3Code.valueOf(lang3.toLowerCase()).getAlpha2().toString();
 	}
 }

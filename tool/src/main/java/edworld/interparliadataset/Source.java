@@ -6,6 +6,7 @@ import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -25,7 +26,7 @@ public abstract class Source {
 	protected static final Pattern PARAGRAPH = Pattern.compile("(?is)<p[^>]*>\\s*(.*?)\\s*</p>");
 	private static final Pattern HTML_MARKUP = Pattern.compile("(?is)<[^/][^>]*>([^<]*)</[^>]*>");
 
-	public abstract Document loadDocument(String id) throws IOException;
+	public abstract List<Document> loadDocuments(String id) throws IOException;
 
 	protected String uniqueOccurrences(String pageContent, Pattern pattern, String separator) {
 		StringJoiner joiner = new StringJoiner(separator);

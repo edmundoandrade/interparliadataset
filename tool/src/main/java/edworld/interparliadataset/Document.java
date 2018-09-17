@@ -1,160 +1,259 @@
 package edworld.interparliadataset;
 
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Document {
 	private static String CSV_SEPARATOR = ",";
-	private String id;
-	private String journalId;
-	private String metadata;
-	private String txtLang;
-	private String htmlLang;
-	private String pdfLang;
-	private String journalLang;
-	List<String[]> texts = new ArrayList<>();
-	String[] txtLanguages;
+	private String docId;
+	private String lang;
+	private String url;
+	private String firstPublicationUrl;
+	private String lastPublicationUrl;
+	private String authority;
+	private String title;
+	private String alternativeTitles;
+	private String introduction;
+	private LocalDateTime date;
+	private LocalDateTime firstPublicationDate;
+	private LocalDateTime lastPublicationDate;
+	private String textUrl;
+	private String htmlUrl;
+	private String pdfUrl;
+	private List<DocumentSentence> sentences = new ArrayList<>();
 
-	public Document(String id) {
-		this.id = id;
+	public Document(String docId, String lang) {
+		this.docId = docId;
+		this.lang = lang;
 	}
 
 	public static void metadataHeaderToCsv(PrintWriter out) {
-		out.print("id");
+		out.print("docId");
 		out.print(CSV_SEPARATOR);
-		out.print("journalId");
+		out.print("lang");
 		out.print(CSV_SEPARATOR);
-		out.print("metadata");
+		out.print("url");
 		out.print(CSV_SEPARATOR);
-		out.print("txtLang");
+		out.print("firstPublicationUrl");
 		out.print(CSV_SEPARATOR);
-		out.print("htmlLang");
+		out.print("lastPublicationUrl");
 		out.print(CSV_SEPARATOR);
-		out.print("pdfLang");
+		out.print("authority");
 		out.print(CSV_SEPARATOR);
-		out.print("journalLang");
+		out.print("title");
+		out.print(CSV_SEPARATOR);
+		out.print("alternativeTitles");
+		out.print(CSV_SEPARATOR);
+		out.print("introduction");
+		out.print(CSV_SEPARATOR);
+		out.print("date");
+		out.print(CSV_SEPARATOR);
+		out.print("firstPublicationDate");
+		out.print(CSV_SEPARATOR);
+		out.print("lastPublicationDate");
+		out.print(CSV_SEPARATOR);
+		out.print("textUrl");
+		out.print(CSV_SEPARATOR);
+		out.print("htmlUrl");
+		out.print(CSV_SEPARATOR);
+		out.print("pdfUrl");
 		out.println();
 	}
 
-	public static void textHeaderToCsv(String[] languages, PrintWriter out) {
-		out.print("id");
+	public static void textHeaderToCsv(PrintWriter out) {
+		out.print("docId");
 		out.print(CSV_SEPARATOR);
 		out.print("seq");
-		for (String lang : languages) {
-			out.print(CSV_SEPARATOR);
-			out.print(lang);
-		}
+		out.print(CSV_SEPARATOR);
+		out.print("lang");
+		out.print(CSV_SEPARATOR);
+		out.print("sentence");
 		out.println();
 	}
 
 	public Document metadataToCsv(PrintWriter out) {
-		out.print(quoteData(id));
+		out.print(quoteData(docId));
 		out.print(CSV_SEPARATOR);
-		out.print(journalId);
+		out.print(lang);
 		out.print(CSV_SEPARATOR);
-		out.print(quoteData(metadata));
+		out.print(quoteData(url));
 		out.print(CSV_SEPARATOR);
-		out.print(txtLang);
+		out.print(quoteData(firstPublicationUrl));
 		out.print(CSV_SEPARATOR);
-		out.print(htmlLang);
+		out.print(quoteData(lastPublicationUrl));
 		out.print(CSV_SEPARATOR);
-		out.print(pdfLang);
+		out.print(quoteData(authority));
 		out.print(CSV_SEPARATOR);
-		out.print(journalLang);
+		out.print(quoteData(title));
+		out.print(CSV_SEPARATOR);
+		out.print(quoteData(alternativeTitles));
+		out.print(CSV_SEPARATOR);
+		out.print(quoteData(introduction));
+		out.print(CSV_SEPARATOR);
+		out.print(quoteData(date));
+		out.print(CSV_SEPARATOR);
+		out.print(quoteData(firstPublicationDate));
+		out.print(CSV_SEPARATOR);
+		out.print(quoteData(lastPublicationDate));
+		out.print(CSV_SEPARATOR);
+		out.print(quoteData(textUrl));
+		out.print(CSV_SEPARATOR);
+		out.print(quoteData(htmlUrl));
+		out.print(CSV_SEPARATOR);
+		out.print(quoteData(pdfUrl));
 		out.println();
 		return this;
 	}
 
-	public Document textToCsv(String[] languages, PrintWriter out) {
-		int textSeq = 1;
-		for (String[] text : texts) {
-			out.print(quoteData(id));
-			out.print(CSV_SEPARATOR);
-			out.print(textSeq);
-			for (String lang : languages) {
-				out.print(CSV_SEPARATOR);
-				int languageIndex = 0;
-				for (String txtLanguage : txtLanguages) {
-					if (txtLanguage.equalsIgnoreCase(lang) && text[languageIndex] != null) {
-						out.print(quoteData(text[languageIndex]));
-						break;
-					}
-					languageIndex++;
+	public Document textToCsv(PrintWriter out) {
+		int sequence = 1;
+		boolean found = true;
+		while (found) {
+			found = false;
+			for (DocumentSentence sentence : sentences)
+				if (sequence == sentence.getSeq()) {
+					out.print(quoteData(docId));
+					out.print(CSV_SEPARATOR);
+					out.print(sentence.getSeq());
+					out.print(CSV_SEPARATOR);
+					out.print(quoteData(sentence.getSentence()));
+					out.println();
+					found = true;
+					break;
 				}
-			}
-			out.println();
-			textSeq++;
+			sequence++;
 		}
 		return this;
 	}
 
 	private String quoteData(String text) {
+		if (text == null)
+			return "";
 		return "\"" + text.replaceAll("\"", "\"\"") + "\"";
 	}
 
-	public String[] txtLanguages() {
-		return txtLanguages;
+	private String quoteData(LocalDateTime date) {
+		if (date == null)
+			return "";
+		return "\"" + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "\"";
 	}
 
-	public String getId() {
-		return id;
+	public String getDocId() {
+		return docId;
 	}
 
-	public void setId(String id) {
-		this.id = id;
+	public String getLang() {
+		return lang;
 	}
 
-	public String getJournalId() {
-		return journalId;
+	public String getUrl() {
+		return url;
 	}
 
-	public void setJournalId(String journalId) {
-		this.journalId = journalId;
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
-	public String getMetadata() {
-		return metadata;
+	public String getFirstPublicationUrl() {
+		return firstPublicationUrl;
 	}
 
-	public void setMetadata(String metadata) {
-		this.metadata = metadata;
+	public void setFirstPublicationUrl(String firstPublicationUrl) {
+		this.firstPublicationUrl = firstPublicationUrl;
 	}
 
-	public String getTxtLang() {
-		return txtLang;
+	public String getLastPublicationUrl() {
+		return lastPublicationUrl;
 	}
 
-	public void setTxtLang(String txtLang) {
-		this.txtLang = txtLang;
-		txtLanguages = txtLang.isEmpty() ? new String[0] : txtLang.split("\\+");
+	public void setLastPublicationUrl(String lastPublicationUrl) {
+		this.lastPublicationUrl = lastPublicationUrl;
 	}
 
-	public String getHtmlLang() {
-		return htmlLang;
+	public String getAuthority() {
+		return authority;
 	}
 
-	public void setHtmlLang(String htmlLang) {
-		this.htmlLang = htmlLang;
+	public void setAuthority(String authority) {
+		this.authority = authority;
 	}
 
-	public String getPdfLang() {
-		return pdfLang;
+	public String getTitle() {
+		return title;
 	}
 
-	public void setPdfLang(String pdfLang) {
-		this.pdfLang = pdfLang;
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
-	public String getJournalLang() {
-		return journalLang;
+	public String getAlternativeTitles() {
+		return alternativeTitles;
 	}
 
-	public void setJournalLang(String journalLang) {
-		this.journalLang = journalLang;
+	public void setAlternativeTitles(String alternativeTitles) {
+		this.alternativeTitles = alternativeTitles;
 	}
 
-	public List<String[]> getTexts() {
-		return texts;
+	public String getIntroduction() {
+		return introduction;
+	}
+
+	public void setIntroduction(String introduction) {
+		this.introduction = introduction;
+	}
+
+	public LocalDateTime getDate() {
+		return date;
+	}
+
+	public void setDate(LocalDateTime date) {
+		this.date = date;
+	}
+
+	public LocalDateTime getFirstPublicationDate() {
+		return firstPublicationDate;
+	}
+
+	public void setFirstPublicationDate(LocalDateTime firstPublicationDate) {
+		this.firstPublicationDate = firstPublicationDate;
+	}
+
+	public LocalDateTime getLastPublicationDate() {
+		return lastPublicationDate;
+	}
+
+	public void setLastPublicationDate(LocalDateTime lastPublicationDate) {
+		this.lastPublicationDate = lastPublicationDate;
+	}
+
+	public String getTextUrl() {
+		return textUrl;
+	}
+
+	public void setTextUrl(String textUrl) {
+		this.textUrl = textUrl;
+	}
+
+	public String getHtmlUrl() {
+		return htmlUrl;
+	}
+
+	public void setHtmlUrl(String htmlUrl) {
+		this.htmlUrl = htmlUrl;
+	}
+
+	public String getPdfUrl() {
+		return pdfUrl;
+	}
+
+	public void setPdfUrl(String pdfUrl) {
+		this.pdfUrl = pdfUrl;
+	}
+
+	public List<DocumentSentence> getSentences() {
+		return sentences;
 	}
 }

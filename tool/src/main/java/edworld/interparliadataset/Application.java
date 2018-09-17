@@ -24,7 +24,7 @@ public class Application implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws IOException {
-		String langs = "BG+ES+CS+DA+DE+ET+EL+EN+FR+GA+HR+IT+LV+LT+HU+MT+NL+PL+PT+RO+SK+SL+FI+SV";
+		String langs = "bg+es+cs+da+de+et+el+en+fr+ga+hr+it+lv+lt+hu+mt+nl+pl+pt+ro+sk+sl+fi+sv";
 		if (args.length == 0) {
 			System.out.println();
 			System.out.println(
@@ -42,8 +42,8 @@ public class Application implements CommandLineRunner {
 					"By default, European Union's laws will be downloaded in the available EUR-Lex languages:");
 			System.out.println("  " + langs);
 			System.out.println(
-					"To restrict these languages, use: --languages <LANG1>+...+<LANGN>. Example: --languages EN+PT");
-			System.out.println("In case of Brazil's laws, there is only one target language: PT-BR");
+					"To restrict these languages, use: --languages <LANG1>+...+<LANGN>. Example: --languages en+pt");
+			System.out.println("In case of Brazil's laws, there is only one target language: pt-BR");
 			System.out.println();
 			System.out.println("As result, the legislative data will be saved in two files:");
 			System.out.println("- dataset/metadata.csv");
@@ -81,18 +81,19 @@ public class Application implements CommandLineRunner {
 			System.out.println("importing law texts in the languages: " + langs);
 			System.out.println("appending metadata to " + metadataFile.getAbsolutePath());
 			System.out.println("appending text to " + textFile.getAbsolutePath());
-			String[] languages = langs.split("\\+");
 			if (generateMetadataHeader)
 				Document.metadataHeaderToCsv(metadataOut);
 			if (generateTextHeader)
-				Document.textHeaderToCsv(languages, textOut);
+				Document.textHeaderToCsv(textOut);
 			LocalDateTime start = LocalDateTime.now();
-			EuropeanUnionSource europeanUnionSource = new EuropeanUnionSource(languages);
+			EuropeanUnionSource europeanUnionSource = new EuropeanUnionSource(langs.split("\\+"));
 			Source brazilSource = new BrazilSource();
-			for (String id : idsCELEX)
-				europeanUnionSource.loadDocument(id).metadataToCsv(metadataOut).textToCsv(languages, textOut);
-			for (String id : idsURNLEXBR)
-				brazilSource.loadDocument(id).metadataToCsv(metadataOut).textToCsv(languages, textOut);
+			for (String docId : idsCELEX)
+				for (Document document : europeanUnionSource.loadDocuments(docId))
+					document.metadataToCsv(metadataOut).textToCsv(textOut);
+			for (String docId : idsURNLEXBR)
+				for (Document document : brazilSource.loadDocuments(docId))
+					document.metadataToCsv(metadataOut).textToCsv(textOut);
 			System.out.println("Finished. Total duration: " + Duration.between(start, LocalDateTime.now()));
 		}
 	}

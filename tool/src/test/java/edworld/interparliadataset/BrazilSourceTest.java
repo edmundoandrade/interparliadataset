@@ -3,6 +3,7 @@ package edworld.interparliadataset;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -26,24 +27,27 @@ public class BrazilSourceTest {
 
 	@Test
 	public void loadDocumentWithTextUnavailable() throws IOException {
-		Document document = source.loadDocument("urn:lex:br:federal:decreto:1972-07-28;70885");
-		Assert.notNull(document, "document shouldn't be null even when legal text is not available");
-		Assertions.assertThat(document.getTxtLang()).isEmpty();
+		List<Document> documents = source.loadDocuments("urn:lex:br:federal:decreto:1972-07-28;70885");
+		assertEquals(1, documents.size());
+		Assert.notNull(documents.get(0), "document shouldn't be null even when legal text is not available");
+		Assertions.assertThat(documents.get(0).getSentences()).isEmpty();
 	}
 
 	@Test
 	public void loadODocument1992() throws IOException {
-		Document document = source.loadDocument("urn:lex:br:federal:lei:1992-04-22;8413");
-		Assert.notNull(document, "document shouldn't be null when legal text is available");
-		assertEquals("PT-BR", document.getTxtLang());
-		assertEquals(22, document.getTexts().size());
+		List<Document> documents = source.loadDocuments("urn:lex:br:federal:lei:1992-04-22;8413");
+		assertEquals(1, documents.size());
+		Assert.notNull(documents.get(0), "document shouldn't be null when legal text is available");
+		assertEquals("pt-BR", documents.get(0).getLang());
+		assertEquals(22, documents.get(0).getSentences().size());
 	}
 
 	@Test
 	public void loadODocument1993() throws IOException {
-		Document document = source.loadDocument("urn:lex:br:federal:lei:1993-06-21;8666");
-		Assert.notNull(document, "document shouldn't be null when legal text is available");
-		assertEquals("PT-BR", document.getTxtLang());
-		assertEquals(1016, document.getTexts().size());
+		List<Document> documents = source.loadDocuments("urn:lex:br:federal:lei:1993-06-21;8666");
+		assertEquals(1, documents.size());
+		Assert.notNull(documents.get(0), "document shouldn't be null when legal text is available");
+		assertEquals("pt-BR", documents.get(0).getLang());
+		assertEquals(1016, documents.get(0).getSentences().size());
 	}
 }
