@@ -2,6 +2,7 @@ package edworld.interparliadataset;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,7 @@ import java.util.regex.Pattern;
 import org.apache.http.HttpStatus;
 
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.ProxyConfig;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
@@ -40,6 +42,9 @@ public class BrazilSource extends Source {
 			webClient.getOptions().setUseInsecureSSL(true);
 			webClient.getOptions().setCssEnabled(false);
 			webClient.getOptions().setThrowExceptionOnScriptError(false);
+			if (System.getProperty("http.proxyHost") != null && System.getProperty("http.proxyPort") != null)
+				webClient.getOptions().setProxyConfig(new ProxyConfig(System.getProperty("http.proxyHost"),
+						Integer.parseInt(System.getProperty("http.proxyPort"))));
 			new WebConnectionWrapper(webClient) {
 				public WebResponse getResponse(final WebRequest request) throws IOException {
 					if (request.getUrl().toString().startsWith("http://www.planalto.gov.br/"))
@@ -48,7 +53,18 @@ public class BrazilSource extends Source {
 					if (document.getSentences().isEmpty() && request.getUrl().toString().matches(".*\\.html?")
 							&& response.getStatusCode() == HttpStatus.SC_OK) {
 						document.setHtmlUrl(request.getUrl().toString());
-						loadTexts(response.getContentAsString(), document);
+						Charset charset = response.getContentCharsetOrNull();
+						if (charset == null)
+							charset = Charset.forName("windows-1252");
+
+//						System.out.println("src/test/resources/"+request.getUrl().toString().replaceAll(
+//								"http://legislacao.planalto.gov.br/legisla/legislacao.nsf/websearch\\?openagent&(.*)",
+//								"/$1.html"));
+//						FileUtils.writeStringToFile(new File("src/test/resources/"+request.getUrl().toString().replaceAll(
+//								"http://legislacao.planalto.gov.br/legisla/legislacao.nsf/websearch\\?openagent&(.*)",
+//								"/$1.html")), response.getContentAsString(charset), charset);
+
+						loadTexts(response.getContentAsString(charset), document);
 					}
 					return response;
 				}

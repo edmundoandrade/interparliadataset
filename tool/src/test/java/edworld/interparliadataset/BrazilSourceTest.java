@@ -49,5 +49,9 @@ public class BrazilSourceTest {
 		Assert.notNull(documents.get(0), "document shouldn't be null when legal text is available");
 		assertEquals("pt-BR", documents.get(0).getLang());
 		assertEquals(1016, documents.get(0).getSentences().size());
+		for (Document document : documents)
+			for (DocumentSentence sentence : document.getSentences()) {
+				System.out.println(sentence.getSeq() + ": " + sentence.getSentence());
+			}
 	}
 }
