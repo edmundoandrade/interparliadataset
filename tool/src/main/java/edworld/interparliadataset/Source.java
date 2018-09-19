@@ -43,13 +43,13 @@ public abstract class Source {
 	}
 
 	protected String removeMarkup(String text) {
-		String result = text.replace("<span class=\"super\">o</span>", "º");
+		String result = unescapeHTML(text.replace("&nbsp;", " ").replace("<span class=\"super\">o</span>", "º"));
 		Matcher matcher = HTML_MARKUP.matcher(result);
 		while (matcher.find()) {
 			result = matcher.replaceAll("$1");
 			matcher = HTML_MARKUP.matcher(result);
 		}
-		return result.replaceAll("^\\s*(.*?)\\s*$", "$1");
+		return result.replaceAll("(?s)^\\s*(.*?)\\s*$", "$1");
 	}
 
 	protected String unescapeHTML(String text) {

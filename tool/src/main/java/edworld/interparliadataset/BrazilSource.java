@@ -56,14 +56,6 @@ public class BrazilSource extends Source {
 						Charset charset = response.getContentCharsetOrNull();
 						if (charset == null)
 							charset = Charset.forName("windows-1252");
-
-//						System.out.println("src/test/resources/"+request.getUrl().toString().replaceAll(
-//								"http://legislacao.planalto.gov.br/legisla/legislacao.nsf/websearch\\?openagent&(.*)",
-//								"/$1.html"));
-//						FileUtils.writeStringToFile(new File("src/test/resources/"+request.getUrl().toString().replaceAll(
-//								"http://legislacao.planalto.gov.br/legisla/legislacao.nsf/websearch\\?openagent&(.*)",
-//								"/$1.html")), response.getContentAsString(charset), charset);
-
 						loadTexts(response.getContentAsString(charset), document);
 					}
 					return response;
@@ -95,8 +87,10 @@ public class BrazilSource extends Source {
 				text = text.substring(sep).trim();
 				sequence++;
 			}
-			document.getSentences().add(new DocumentSentence(sequence, text));
-			sequence++;
+			if (!text.isEmpty()) {
+				document.getSentences().add(new DocumentSentence(sequence, text));
+				sequence++;
+			}
 		}
 	}
 

@@ -39,7 +39,7 @@ public class BrazilSourceTest {
 		assertEquals(1, documents.size());
 		Assert.notNull(documents.get(0), "document shouldn't be null when legal text is available");
 		assertEquals("pt-BR", documents.get(0).getLang());
-		assertEquals(22, documents.get(0).getSentences().size());
+		assertEquals(9, documents.get(0).getSentences().size());
 	}
 
 	@Test
@@ -48,10 +48,6 @@ public class BrazilSourceTest {
 		assertEquals(1, documents.size());
 		Assert.notNull(documents.get(0), "document shouldn't be null when legal text is available");
 		assertEquals("pt-BR", documents.get(0).getLang());
-		assertEquals(1016, documents.get(0).getSentences().size());
-		for (Document document : documents)
-			for (DocumentSentence sentence : document.getSentences()) {
-				System.out.println(sentence.getSeq() + ": " + sentence.getSentence());
-			}
+		assertEquals(1008, documents.get(0).getSentences().size());
 	}
 }
