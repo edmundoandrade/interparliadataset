@@ -28,13 +28,19 @@ public abstract class Source {
 
 	public abstract List<Document> loadDocuments(String id) throws IOException;
 
-	protected String uniqueOccurrences(String pageContent, Pattern pattern, String separator) {
+	public static String pageContent(String url) throws IOException {
+		try (InputStream stream = new URL(url).openStream(); Scanner scanner = new Scanner(stream, "UTF-8")) {
+			return scanner.useDelimiter("\\A").next();
+		}
+	}
+
+	public static String uniqueOccurrences(String pageContent, Pattern pattern, String separator) {
 		StringJoiner joiner = new StringJoiner(separator);
 		uniqueOccurrences(pageContent, pattern).stream().forEach(item -> joiner.add(item));
 		return joiner.toString();
 	}
 
-	protected Set<String> uniqueOccurrences(String pageContent, Pattern pattern) {
+	public static Set<String> uniqueOccurrences(String pageContent, Pattern pattern) {
 		Set<String> occurrences = new LinkedHashSet<>();
 		Matcher matcher = pattern.matcher(pageContent);
 		while (matcher.find())
@@ -54,12 +60,6 @@ public abstract class Source {
 
 	protected String unescapeHTML(String text) {
 		return StringEscapeUtils.unescapeHtml4(text);
-	}
-
-	protected String pageContent(String url) throws IOException {
-		try (InputStream stream = new URL(url).openStream(); Scanner scanner = new Scanner(stream, "UTF-8")) {
-			return scanner.useDelimiter("\\A").next();
-		}
 	}
 
 	protected String translateUrl(String url) {
