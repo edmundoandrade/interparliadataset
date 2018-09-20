@@ -24,7 +24,6 @@ import org.apache.commons.text.StringEscapeUtils;
 
 public abstract class Source {
 	protected static final Pattern PARAGRAPH = Pattern.compile("(?is)<p[^>]*>\\s*(.*?)\\s*</p>");
-	private static final Pattern HTML_MARKUP = Pattern.compile("(?is)<[^/][^>]*>([^<]*)</[^>]*>");
 
 	public abstract List<Document> loadDocuments(String id) throws IOException;
 
@@ -48,17 +47,15 @@ public abstract class Source {
 		return occurrences;
 	}
 
-	protected String removeMarkup(String text) {
-		String result = unescapeHTML(text.replace("&nbsp;", " ").replace("<span class=\"super\">o</span>", "º"));
-		Matcher matcher = HTML_MARKUP.matcher(result);
-		while (matcher.find()) {
-			result = matcher.replaceAll("$1");
-			matcher = HTML_MARKUP.matcher(result);
-		}
-		return result.replaceAll("(?s)^\\s*(.*?)\\s*$", "$1");
+	public static String removeMarkup(String text) {
+		String result = unescapeHTML(text.replace("&nbsp;", " ").replace("<sup>o</sup>", "º")
+				.replace("<sup><u>o</u></sup>", "º").replaceAll("<u><sup><span[^>]*>o</span></sup></u>", "º")
+				.replace("<span class=\"super\">o</span>", "º").replaceAll("<br[ /]*>|</p>", "&LINEBREAK;")
+				.replaceAll("(?is)\\s*<[^>]*>\\s*", " ").replaceAll("(?s)\\s+", " "));
+		return result.replace("&LINEBREAK;", "\n").trim();
 	}
 
-	protected String unescapeHTML(String text) {
+	public static String unescapeHTML(String text) {
 		return StringEscapeUtils.unescapeHtml4(text);
 	}
 

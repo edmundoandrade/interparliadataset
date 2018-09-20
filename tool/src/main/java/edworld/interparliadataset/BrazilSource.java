@@ -80,16 +80,46 @@ public class BrazilSource extends Source {
 		int sequence = 1;
 		Matcher matcher = PARAGRAPH.matcher(pageContent);
 		while (matcher.find()) {
-			String text = removeMarkup(matcher.group(1));
-			if (combinedWithArticleNumber(text)) {
-				int sep = text.indexOf('°') + 1;
-				document.getSentences().add(new DocumentSentence(sequence, text.substring(0, sep)));
-				text = text.substring(sep).trim();
-				sequence++;
+			int pos = matcher.group(1).indexOf("<p>");
+			if (pos < 0)
+				pos = matcher.group(1).indexOf("<p ");
+			int lastPos = pos;
+			while (pos >= 0) {
+				String text = removeMarkup(matcher.group(1).substring(0, pos));
+				String[] lines = text.split("[\r\n]+");
+				for (String line : lines) {
+					line = line.trim();
+					if (combinedWithArticleNumber(line)) {
+						int sep = line.indexOf('°') + 1;
+						document.getSentences().add(new DocumentSentence(sequence, line.substring(0, sep)));
+						line = line.substring(sep).trim();
+						sequence++;
+					}
+					if (!line.isEmpty()) {
+						document.getSentences().add(new DocumentSentence(sequence, line));
+						sequence++;
+					}
+				}
+				lastPos = pos;
+				pos = matcher.group(1).indexOf("<p>", lastPos + 1);
+				if (pos < 0)
+					pos = matcher.group(1).indexOf("<p ", lastPos + 1);
 			}
-			if (!text.isEmpty()) {
-				document.getSentences().add(new DocumentSentence(sequence, text));
-				sequence++;
+			String text = lastPos < 0 ? removeMarkup(matcher.group(1))
+					: removeMarkup(matcher.group(1).substring(matcher.group(1).indexOf('>', lastPos) + 1));
+			String[] lines = text.split("[\r\n]+");
+			for (String line : lines) {
+				line = line.trim();
+				if (combinedWithArticleNumber(line)) {
+					int sep = line.indexOf('°') + 1;
+					document.getSentences().add(new DocumentSentence(sequence, line.substring(0, sep)));
+					line = line.substring(sep).trim();
+					sequence++;
+				}
+				if (!line.isEmpty()) {
+					document.getSentences().add(new DocumentSentence(sequence, line));
+					sequence++;
+				}
 			}
 		}
 	}

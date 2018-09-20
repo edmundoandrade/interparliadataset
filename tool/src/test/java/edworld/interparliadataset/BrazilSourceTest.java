@@ -39,7 +39,7 @@ public class BrazilSourceTest {
 		assertEquals(1, documents.size());
 		Assert.notNull(documents.get(0), "document shouldn't be null when legal text is available");
 		assertEquals("pt-BR", documents.get(0).getLang());
-		assertEquals(9, documents.get(0).getSentences().size());
+		assertEquals(17, documents.get(0).getSentences().size());
 	}
 
 	@Test
@@ -48,6 +48,8 @@ public class BrazilSourceTest {
 		assertEquals(1, documents.size());
 		Assert.notNull(documents.get(0), "document shouldn't be null when legal text is available");
 		assertEquals("pt-BR", documents.get(0).getLang());
-		assertEquals(1008, documents.get(0).getSentences().size());
+		assertEquals(1052, documents.get(0).getSentences().size());
+		assertEquals("Presidência da República", documents.get(0).getSentences().get(0).getSentence());
+		assertEquals("LEI Nº 8.666, DE 21 DE JUNHO DE 1993", documents.get(0).getSentences().get(3).getSentence());
 	}
 }

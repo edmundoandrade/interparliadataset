@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -59,11 +60,25 @@ public class ImprensaNacionalTest {
 				ZipEntry zipEntry = input.getNextEntry();
 				while (zipEntry != null) {
 					System.out.println("\t" + zipEntry.getName());
+					loadDocumentFromXml(IOUtils.toString(input, "UTF-8"));
 					zipEntry = input.getNextEntry();
 				}
 			}
 		}
-		// indexDocumentsFromImprensaNacional(html);
+	}
+
+	private void loadDocumentFromXml(String xml) {
+		for (String artType : Source.uniqueOccurrences(xml, Pattern.compile("artType=\"(.*?)\"")))
+			System.out.println("\t\tType: " + Source.unescapeHTML(artType));
+		for (String artCategory : Source.uniqueOccurrences(xml, Pattern.compile("artCategory=\"(.*?)\"")))
+			System.out.println("\t\tCategory: " + Source.unescapeHTML(artCategory));
+		for (String pdfUrl : Source.uniqueOccurrences(xml, Pattern.compile("pdfPage=\"(.*?)\"")))
+			System.out.println("\t\tPDF URL: " + Source.unescapeHTML(pdfUrl));
+		System.out.println(
+				"\t\tSignedBy: " + Source.uniqueOccurrences(xml, Pattern.compile("(?is)<assina>(.*?)</assina>"), "; "));
+//		for (String text : Source.uniqueOccurrences(xml,
+//				Pattern.compile("(?is)<Texto><!\\[CDATA\\[(.*?)\\]\\]></Texto>")))
+//			System.out.println("\t\tText: " + Source.removeMarkup(text));
 	}
 
 	private void indexDocumentsFromLexML(String html) {
