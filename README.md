@@ -11,8 +11,6 @@ This tool is able to download and convert legislative data given:
 
 By default, European Union's laws will be downloaded in the available EUR-Lex languages:
 
-*[BG]: Bulgarian
-*[ES]: Spanish
 * BG+ES+CS+DA+DE+ET+EL+EN+FR+GA+HR+IT+LV+LT+HU+MT+NL+PL+PT+RO+SK+SL+FI+SV
 
 To restrict these languages, use for instance: --languages EN+PT
