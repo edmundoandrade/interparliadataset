@@ -88,12 +88,16 @@ public class Application implements CommandLineRunner {
 			LocalDateTime start = LocalDateTime.now();
 			EuropeanUnionSource europeanUnionSource = new EuropeanUnionSource(langs.split("\\+"));
 			Source brazilSource = new BrazilSource();
-			for (String docId : idsCELEX)
-				for (Document document : europeanUnionSource.loadDocuments(docId))
-					document.metadataToCsv(metadataOut).textToCsv(textOut);
-			for (String docId : idsURNLEXBR)
-				for (Document document : brazilSource.loadDocuments(docId))
-					document.metadataToCsv(metadataOut).textToCsv(textOut);
+			for (String docId : idsCELEX) {
+				List<Document> documents = europeanUnionSource.loadDocuments(docId);
+				documents.stream().forEach(document -> document.metadataToCsv(metadataOut));
+				Document.textToCsv(textOut, documents);
+			}
+			for (String docId : idsURNLEXBR) {
+				List<Document> documents = brazilSource.loadDocuments(docId);
+				documents.stream().forEach(document -> document.metadataToCsv(metadataOut));
+				Document.textToCsv(textOut, documents);
+			}
 			System.out.println("Finished. Total duration: " + Duration.between(start, LocalDateTime.now()));
 		}
 	}

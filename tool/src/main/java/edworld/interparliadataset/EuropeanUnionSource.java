@@ -39,7 +39,6 @@ public class EuropeanUnionSource extends Source {
 							+ jornalId;
 					Document document = new Document(docId, lang2);
 					document.setAuthority(uniqueOccurrences(xmlMetadata, CREATED_BY, "; "));
-					document.setFirstPublicationUrl(journalUrl);
 					document.setLastPublicationUrl(journalUrl);
 					if (hasExpression(xmlMetadata, lang2, "xhtml")) {
 						document.setHtmlUrl("https://eur-lex.europa.eu/legal-content/" + lang2.toUpperCase()

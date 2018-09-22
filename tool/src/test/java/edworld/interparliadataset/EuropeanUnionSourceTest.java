@@ -32,8 +32,6 @@ public class EuropeanUnionSourceTest {
 		assertEquals("fr", documents.get(0).getLang());
 		assertEquals("Council of the European Union; European Parliament", documents.get(0).getAuthority());
 		assertEquals("https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=OJ:L:2017:347:TOC",
-				documents.get(0).getFirstPublicationUrl());
-		assertEquals("https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=OJ:L:2017:347:TOC",
 				documents.get(0).getLastPublicationUrl());
 		assertEquals("https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32017R2403",
 				documents.get(0).getTextUrl());
@@ -47,8 +45,6 @@ public class EuropeanUnionSourceTest {
 				"relatif à la gestion durable des flottes de pêche externes et abrogeant le règlement (CE) nº 1006/2008 du Conseil",
 				documents.get(0).getSentences().get(6).getSentence());
 		assertEquals("en", documents.get(1).getLang());
-		assertEquals("https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L:2017:347:TOC",
-				documents.get(1).getFirstPublicationUrl());
 		assertEquals("https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L:2017:347:TOC",
 				documents.get(1).getLastPublicationUrl());
 		assertEquals("https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32017R2403",

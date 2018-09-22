@@ -11,7 +11,6 @@ public class Document {
 	private String docId;
 	private String lang;
 	private String url;
-	private String firstPublicationUrl;
 	private String lastPublicationUrl;
 	private String authority;
 	private String title;
@@ -36,8 +35,6 @@ public class Document {
 		out.print("lang");
 		out.print(CSV_SEPARATOR);
 		out.print("url");
-		out.print(CSV_SEPARATOR);
-		out.print("firstPublicationUrl");
 		out.print(CSV_SEPARATOR);
 		out.print("lastPublicationUrl");
 		out.print(CSV_SEPARATOR);
@@ -81,8 +78,6 @@ public class Document {
 		out.print(CSV_SEPARATOR);
 		out.print(quoteData(url));
 		out.print(CSV_SEPARATOR);
-		out.print(quoteData(firstPublicationUrl));
-		out.print(CSV_SEPARATOR);
 		out.print(quoteData(lastPublicationUrl));
 		out.print(CSV_SEPARATOR);
 		out.print(quoteData(authority));
@@ -108,28 +103,30 @@ public class Document {
 		return this;
 	}
 
-	public Document textToCsv(PrintWriter out) {
+	public static void textToCsv(PrintWriter out, List<Document> documents) {
 		int sequence = 1;
 		boolean found = true;
 		while (found) {
 			found = false;
-			for (DocumentSentence sentence : sentences)
-				if (sequence == sentence.getSeq()) {
-					out.print(quoteData(docId));
-					out.print(CSV_SEPARATOR);
-					out.print(sentence.getSeq());
-					out.print(CSV_SEPARATOR);
-					out.print(quoteData(sentence.getSentence()));
-					out.println();
-					found = true;
-					break;
-				}
+			for (Document document : documents)
+				for (DocumentSentence sentence : document.getSentences())
+					if (sequence == sentence.getSeq()) {
+						out.print(quoteData(document.getDocId()));
+						out.print(CSV_SEPARATOR);
+						out.print(sentence.getSeq());
+						out.print(CSV_SEPARATOR);
+						out.print(document.getLang());
+						out.print(CSV_SEPARATOR);
+						out.print(quoteData(sentence.getSentence()));
+						out.println();
+						found = true;
+						break;
+					}
 			sequence++;
 		}
-		return this;
 	}
 
-	private String quoteData(String text) {
+	private static String quoteData(String text) {
 		if (text == null)
 			return "";
 		return "\"" + text.replaceAll("\"", "\"\"") + "\"";
@@ -155,14 +152,6 @@ public class Document {
 
 	public void setUrl(String url) {
 		this.url = url;
-	}
-
-	public String getFirstPublicationUrl() {
-		return firstPublicationUrl;
-	}
-
-	public void setFirstPublicationUrl(String firstPublicationUrl) {
-		this.firstPublicationUrl = firstPublicationUrl;
 	}
 
 	public String getLastPublicationUrl() {
