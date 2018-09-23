@@ -3,6 +3,7 @@ package edworld.interparliadataset;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.Locale;
@@ -14,6 +15,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -33,7 +35,8 @@ public class ImprensaNacionalTest {
 	public void loadDocumentsByMonthTest() throws IOException {
 		for (int year = 2002; year <= 2018; year++)
 			for (int month = 1; month <= 12; month++)
-				loadDocumentsByMonth(year, month, new File(year + "/" + month));
+				loadDocumentsByMonth(year, month,
+						new File("dataset/" + year + "/" + Integer.toString(100 + month).substring(1)));
 	}
 
 	private void loadDocumentsByMonth(int year, int month, File folder) throws IOException {
@@ -53,7 +56,7 @@ public class ImprensaNacionalTest {
 			indexDocumentsFromLexML(html);
 			Optional<String> next = nextPage(html);
 			if (next.isPresent()) {
-				url = next.get();
+				url = "http://lexml.gov.br/busca/" + next.get();
 				nextPage = true;
 			} else
 				nextPage = false;
@@ -65,21 +68,25 @@ public class ImprensaNacionalTest {
 		String monthName = LocalDate.of(year, month, 1).getMonth()
 				.getDisplayName(TextStyle.FULL, new Locale("pt", "BR")).toLowerCase();
 		String url = "http://www.imprensanacional.gov.br/dados-abertos/base-de-dados/publicacoes-do-dou/" + year + "/"
-				+ monthName;
+				+ StringUtils.stripAccents(monthName);
 		System.out.println(url);
 		String html = Source.pageContent(url);
 		Set<String> zips = Source.uniqueOccurrences(html, IMPRENSA_NACIONAL_ZIP);
 		for (String zip : zips) {
+			System.out.println("http://www.imprensanacional.gov.br" + zip);
 			try (ZipInputStream input = new ZipInputStream(
-					new URL("http://www.imprensanacional.gov.br" + zip).openStream())) {
+					new URL("http://www.imprensanacional.gov.br" + zip).openStream(), Charset.forName("IBM-850"))) {
 				ZipEntry zipEntry = input.getNextEntry();
 				while (zipEntry != null) {
-					String xml = IOUtils.toString(input, "UTF-8");
-					if ((xml.contains("artType=\"LEI\"")) && (xml.contains("artCategory=\"Atos do Poder Executivo\"")
-							|| xml.contains("artCategory=\"Atos do Poder Legislativo\""))) {
-						FileUtils.write(new File(folder, zipEntry.getName()), xml, "UTF-8");
+					if (zipEntry.getName().endsWith(".xml")) {
 						System.out.println("\t" + zipEntry.getName());
-						loadDocumentFromXml(xml);
+						String xml = IOUtils.toString(input, "UTF-8");
+						if ((xml.contains("artType=\"LEI\""))
+								&& (xml.contains("artCategory=\"Atos do Poder Executivo\"")
+										|| xml.contains("artCategory=\"Atos do Poder Legislativo\""))) {
+							FileUtils.write(new File(folder, zipEntry.getName()), xml, "UTF-8");
+							loadDocumentFromXml(xml);
+						}
 					}
 					zipEntry = input.getNextEntry();
 				}
