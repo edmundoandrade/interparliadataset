@@ -41,7 +41,7 @@ public class ImprensaNacionalTest {
 
 	private void loadDocumentsByMonth(int year, int month, File folder) throws IOException {
 		loadDocumentsByMonthFromLexML(year, month);
-		loadDocumentsByMonthFromImprensaNacional(year, month, folder);
+		// loadDocumentsByMonthFromImprensaNacional(year, month, folder);
 	}
 
 	private void loadDocumentsByMonthFromLexML(int year, int month) throws IOException {

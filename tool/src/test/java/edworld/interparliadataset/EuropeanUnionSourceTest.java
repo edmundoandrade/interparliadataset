@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class EuropeanUnionSourceTest {
@@ -33,6 +34,7 @@ public class EuropeanUnionSourceTest {
 		assertEquals("Council of the European Union; European Parliament", documents.get(0).getAuthority());
 		assertEquals("https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=OJ:L:2017:347:TOC",
 				documents.get(0).getLastPublicationUrl());
+		Assert.assertNull(documents.get(0).getLastPublicationDate());
 		assertEquals("https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32017R2403",
 				documents.get(0).getTextUrl());
 		assertEquals("https://eur-lex.europa.eu/legal-content/FR/TXT/HTML/?uri=CELEX:32017R2403",
@@ -70,6 +72,5 @@ public class EuropeanUnionSourceTest {
 		assertEquals(
 				"relativo à gestão sustentável das frotas de pesca externas, e que revoga o Regulamento (CE) n.º 1006/2008 do Conselho",
 				documents.get(3).getSentences().get(6).getSentence());
-//		assertEquals("OJ:L:2017:347:TOC", document.getJournalId());
 	}
 }
